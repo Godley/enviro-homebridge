@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "Pimoroni Enviro",
   "name": "homebridge-pimoroni-enviro",
   "version": "1.0.0",
