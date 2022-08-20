@@ -1,8 +1,7 @@
-import { Service, PlatformAccessory, Logger, Perms } from 'homebridge';
+import { Service, PlatformAccessory, Logger } from 'homebridge';
 
 import { EnviroHomebridgePlatform } from './platform';
 import { Reading } from './mqtt';
-import {v4 as uuidv4} from 'uuid';
 
 /**
  * Platform Accessory
