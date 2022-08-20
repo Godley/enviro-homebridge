@@ -16,13 +16,10 @@ export class EnviroAccessory {
   moisture_1: Service;
   moisture_2: Service;
   moisture_3: Service;
-  pressure: Service;
   //soil_moisture_1: Service;
   //soil_moisture_2: Service;
   //soil_moisture_3: Service;
   logger: Logger;
-
-  pressureCharacteristic: string;
 
   constructor(
     private readonly platform: EnviroHomebridgePlatform,
@@ -51,15 +48,6 @@ export class EnviroAccessory {
     || this.accessory.addService(this.platform.Service.HumiditySensor, 'Soil moisture 2', 'soil-moisture-2');
     this.moisture_3 = this.accessory.getService('Soil moisture 3')
     || this.accessory.addService(this.platform.Service.HumiditySensor, 'Soil moisture 3', 'soil-moisture-3');
-    this.pressure = new this.platform.Service('pressure', uuidv4());
-    this.pressureCharacteristic = uuidv4();
-    const pressure = new this.platform.Characteristic('air pressure', this.pressureCharacteristic, {
-      unit: 'hPa',
-      minValue: 0.0,
-      maxValue: 1100,
-      format: 'float',
-      perms: [Perms.NOTIFY]});
-    this.pressure.addCharacteristic(pressure);
   }
 
   newReading(reading: Reading) {
@@ -69,7 +57,6 @@ export class EnviroAccessory {
     this.logger.debug(`new soil moistures: ${reading.moisture_1}, ${reading.moisture_2}, ${reading.moisture_3}`);
     this.temp.setCharacteristic(this.platform.Characteristic.CurrentTemperature, reading.temperature);
     this.humid.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.humidity);
-    this.pressure.setCharacteristic('air pressure', reading.pressure);
     this.moisture_1.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_1);
     this.moisture_2.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_2);
     this.moisture_3.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_3);
