@@ -6,4 +6,4 @@ export const PLATFORM_NAME = 'PimoroniEnviroPlugin';
 /**
  * This must match the name of your plugin as defined the package.json
  */
-export const PLUGIN_NAME = 'pimoroni-enviro-plugin';
+export const PLUGIN_NAME = 'homebridge-pimoroni-enviro';
