@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "PimoroniEnviroPlugin",
   "pluginType": "platform",
   "singular": true,
   "schema": {
@@ -10,6 +10,36 @@
         "type": "string",
         "required": true,
         "default": "Example Dynamic Platform"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true,
+        "default": "the username for your mqtt server"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true,
+        "default": "the password for your mqtt server"
+      },
+      "host": {
+        "title": "Host",
+        "type": "string",
+        "required": true,
+        "default": "the host for your mqtt server (no port, no protocol required)"
+      },
+      "port": {
+        "title": "Port",
+        "type": "string",
+        "required": true,
+        "default": "1883"
+      },
+      "topic_prefix": {
+        "title": "Topic prefix",
+        "type": "string",
+        "required": true,
+        "default": "enviro"
       }
     }
   }
