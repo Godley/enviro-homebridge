@@ -28,6 +28,7 @@ export class EnviroAccessory {
   ) {
     this.name = name;
     this.logger = logger;
+    this.newReading = this.newReading.bind(this);
     logger.debug('hello, world');
     // set accessory information
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
