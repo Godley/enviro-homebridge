@@ -70,7 +70,7 @@ export class MqttDriver {
     });
   }
 
-  addCallback(topic_suffix: string, cb: (reading: Reading) => void) {
-    this.onNewReading.set(topic_suffix, cb);
+  addCallback(key: string, cb: (reading: Reading) => void) {
+    this.onNewReading.set(key, cb);
   }
 }
