@@ -27,14 +27,14 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
     public readonly config: PlatformConfig,
     public readonly api: API,
   ) {
-    this.onNewReading = this.onNewReading.bind(this);
+    this.onNewDevice = this.onNewDevice.bind(this);
     this.driver = new MqttDriver({
       username: config.username,
       password: config.password,
       hostname: config.hostname,
       prefix: config.topic_prefix,
       port: config.port,
-      onNewReading: this.onNewReading,
+      onNewDevice: this.onNewDevice,
       log: log,
     });
     this.log.info('Finished initializing platform:', this.config.name);
@@ -48,7 +48,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
     });
   }
 
-  onNewReading(name: string, reading: Reading) {
+  onNewDevice(name: string, reading: Reading) {
     const uuid = this.api.hap.uuid.generate(name);
 
     // see if an accessory with the same uuid has already been registered and restored from
@@ -70,6 +70,8 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
         handler = new EnviroAccessory(this, existingAccessory, this.log, name);
         this.accessoryHandlers.push(handler);
       }
+      this.driver.addCallback(name, handler.newReading);
+      // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
       handler.newReading(reading);
 
       // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
@@ -87,6 +89,8 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       // this is imported from `platformAccessory.ts`
       const handler = new EnviroAccessory(this, accessory, this.log, name);
       this.accessoryHandlers.push(handler);
+      this.driver.addCallback(name, handler.newReading);
+      // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
       handler.newReading(reading);
 
       // link the accessory to your platform

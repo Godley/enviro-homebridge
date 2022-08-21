@@ -22,15 +22,16 @@ interface DriverOptions {
     port: number;
     prefix: string;
     log: Logger;
-    onNewReading: (name: string, reading: Reading) => void;
+    onNewDevice: (name: string, reading: Reading) => void;
 }
 
 export class MqttDriver {
   client: mqtt.MqttClient;
   prefix: string;
-  newReadingCB: (name: string, reading: Reading) => void;
+  onNewDevice: (name: string, reading: Reading) => void;
+  onNewReading: Map<string, (reading: Reading) => void>;
 
-  constructor({ username, password, hostname, port, prefix, log, onNewReading }: DriverOptions) {
+  constructor({ username, password, hostname, port, prefix, log, onNewDevice }: DriverOptions) {
     const mqttOpts: mqtt.IClientOptions = {
       username: username,
       password: password,
@@ -38,8 +39,10 @@ export class MqttDriver {
       port: port,
       clientId: 'homebridge-enviro-plugin',
     };
+    this.onNewReading = new Map([]);
     this.prefix = prefix;
-    this.newReadingCB = onNewReading;
+    this.onNewDevice = onNewDevice;
+    this.addCallback = this.addCallback.bind(this);
     this.client = mqtt.connect(mqttOpts);
     this.client.on('connect', () => {
       this.client.subscribe(prefix + '/#', (err) => {
@@ -58,7 +61,16 @@ export class MqttDriver {
 
       const reading: Reading = JSON.parse(message.toString());
       log.info(`got new reading on device ${parts[1]}`);
-      this.newReadingCB(parts[1], reading);
+      const cb = this.onNewReading.get(parts[1]);
+      if(!cb) {
+        this.onNewDevice(parts[1], reading);
+      } else {
+        cb(reading);
+      }
     });
+  }
+
+  addCallback(key: string, cb: (reading: Reading) => void) {
+    this.onNewReading.set(key, cb);
   }
 }
