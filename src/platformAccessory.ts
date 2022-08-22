@@ -12,6 +12,7 @@ export class EnviroAccessory {
   name: string;
   humid: Service;
   temp: Service;
+  light: Service;
   moisture_1: Service;
   moisture_2: Service;
   moisture_3: Service;
@@ -48,18 +49,22 @@ export class EnviroAccessory {
     || this.accessory.addService(this.platform.Service.HumiditySensor, 'Soil moisture 2', 'soil-moisture-2');
     this.moisture_3 = this.accessory.getService('Soil moisture 3')
     || this.accessory.addService(this.platform.Service.HumiditySensor, 'Soil moisture 3', 'soil-moisture-3');
+    this.light = this.accessory.getService(this.platform.Service.LightSensor)
+    || this.accessory.addService(this.platform.Service.LightSensor);
   }
 
   newReading(reading: Reading) {
     this.logger.debug(`new humidity: ${reading.humidity}`);
     this.logger.debug(`new temp: ${reading.temperature}`);
     this.logger.debug(`new pressure: ${reading.pressure}`);
+    this.logger.debug(`new light: ${reading.light}`);
     this.logger.debug(`new soil moistures: ${reading.moisture_1}, ${reading.moisture_2}, ${reading.moisture_3}`);
     this.temp.setCharacteristic(this.platform.Characteristic.CurrentTemperature, reading.temperature);
     this.humid.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.humidity);
     this.moisture_1.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_1);
     this.moisture_2.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_2);
     this.moisture_3.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_3);
+    this.light.setCharacteristic(this.platform.Characteristic.CurrentAmbientLightLevel, reading.light);
   }
 
 }

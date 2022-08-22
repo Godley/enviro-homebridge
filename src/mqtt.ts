@@ -5,6 +5,7 @@ export interface Reading {
     pressure: number;
     temperature: number;
     humidity: number;
+    light: number;
     moisture_1: number;
     moisture_2: number;
     moisture_3: number;
