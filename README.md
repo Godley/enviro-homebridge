@@ -35,6 +35,8 @@ You will need to run an mqtt broker and homebridge in order for this to work. Fo
 
 You will also need to configure each of your boards to upload to mqtt, using the same broker as above.
 
+Once you have homebridge installed and running, in the homebridge UI go to Plugins and search for "Pimoroni Enviro". Install it and configure it following the table above, and you're done!
+
 # Contributing
 
 Happy to accept PRs - please raise an issue first to discuss unless it's typo or style fixes. 
