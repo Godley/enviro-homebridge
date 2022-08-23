@@ -64,7 +64,11 @@ export class EnviroAccessory {
     this.moisture_1.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_1);
     this.moisture_2.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_2);
     this.moisture_3.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.moisture_3);
-    this.light.setCharacteristic(this.platform.Characteristic.CurrentAmbientLightLevel, reading.light);
+    if(reading.light > 0) {
+      this.light.setCharacteristic(this.platform.Characteristic.CurrentAmbientLightLevel, reading.light);
+    } else {
+      this.light.setCharacteristic(this.platform.Characteristic.CurrentAmbientLightLevel, 0.0001);
+    }
   }
 
 }
