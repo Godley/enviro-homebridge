@@ -1,20 +1,8 @@
 import { Logger } from 'homebridge';
 import mqtt from 'mqtt';
+import { Reading } from './enviro';
 
-export interface Reading {
-    pressure: number;
-    temperature: number;
-    humidity: number;
-    light: number;
-    moisture_1: number;
-    moisture_2: number;
-    moisture_3: number;
-    device: string;
-    timestamp: string;
-    pump_1_on?: boolean;
-    pump_2_on?: boolean;
-    pump_3_on?: boolean;
-}
+
 
 interface DriverOptions {
     username: string;
