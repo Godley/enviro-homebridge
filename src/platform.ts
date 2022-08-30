@@ -7,7 +7,8 @@ import { MqttDriver } from './mqtt';
 import { EnviroUrban } from './enviroUrban';
 import { EnviroIndoor } from './enviroIndoor';
 import { EnviroWeather } from './enviroWeather';
-import { Board, Reading } from './enviro';
+import { Board, Reading, Grow, Indoor, Weather, Urban } from './enviro';
+import { EnviroCommon } from './enviroCommon';
 
 /**
  * HomebridgePlatform
@@ -42,6 +43,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       log: log,
     });
     this.createHandler = this.createHandler.bind(this);
+    this.backwardsCompatHandler = this.backwardsCompatHandler.bind(this);
     this.log.info('Finished initializing platform:', this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
@@ -77,12 +79,17 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       // create the accessory handler for the restored accessory
       // this is imported from `platformAccessory.ts`
       if(!handler) {
-        handler = this.createHandler(existingAccessory, name, reading.model, reading.uid, reading.mac);
+        let handler = this.createHandler(existingAccessory, name, reading);
+        if(!reading.model) {
+          handler = this.backwardsCompatHandler(existingAccessory, name, reading);
+        }
         this.accessoryHandlers.push(handler);
       }
-      this.driver.addCallback(name, handler.newReading);
-      // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
-      handler.newReading(reading);
+      if(handler) {
+        this.driver.addCallback(name, handler.newReading);
+        // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
+        handler.newReading(reading);
+      }
 
       // it is possible to remove platform accessories at any time using `api.unregisterPlatformAccessories`, eg.:
       // remove platform accessories when no longer present
@@ -97,7 +104,11 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
 
       // create the accessory handler for the newly create accessory
       // this is imported from `platformAccessory.ts`
-      const handler = this.createHandler(accessory, name, reading.model, reading.uid, reading.mac);
+
+      let handler = this.createHandler(accessory, name, reading);
+      if(!reading.model) {
+        handler = this.backwardsCompatHandler(accessory, name, reading);
+      }
       this.accessoryHandlers.push(handler);
       this.driver.addCallback(name, handler.newReading);
       // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
@@ -108,25 +119,41 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
     }
   }
 
-  createHandler(existingAccessory: PlatformAccessory, name: string, model?: string, uid?: string, mac?: string) {
-    let handler: Board = new EnviroGrow(this, existingAccessory, this.log, name, uid || 'blank', mac);
-    if(model) {
-      switch(model) {
+  createHandler(existingAccessory: PlatformAccessory, name: string, r: Reading): Board {
+    let handler: Board = new EnviroCommon(this, existingAccessory, this.log, name, r.uid || 'blank', r.mac);
+    if(r.model) {
+      switch(r.model) {
         case 'grow':
-          handler = new EnviroGrow(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          handler = new EnviroGrow(this, existingAccessory, this.log, name, r.uid || 'blank', r.mac);
           break;
         case 'urban':
-          handler = new EnviroUrban(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          handler = new EnviroUrban(this, existingAccessory, this.log, name, r.uid || 'blank', r.mac);
           break;
         case 'indoor':
-          handler = new EnviroIndoor(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          handler = new EnviroIndoor(this, existingAccessory, this.log, name, r.uid || 'blank', r.mac);
           break;
         case 'weather':
-          handler = new EnviroWeather(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          handler = new EnviroWeather(this, existingAccessory, this.log, name, r.uid || 'blank', r.mac);
           break;
       }
     }
     return handler;
+  }
+
+  backwardsCompatHandler(existingAccessory: PlatformAccessory, name: string, reading: Reading): Board {
+    if((reading as Grow).moisture_1) {
+      return new EnviroGrow(this, existingAccessory, this.log, name, reading.uid || 'blank', reading.mac);
+    }
+    if((reading as Urban).noise) {
+      return new EnviroUrban(this, existingAccessory, this.log, name, reading.uid || 'blank', reading.mac);
+    }
+    if((reading as Indoor).luminance) {
+      return new EnviroIndoor(this, existingAccessory, this.log, name, reading.uid || 'blank', reading.mac);
+    }
+    if((reading as Weather).wind_speed) {
+      return new EnviroWeather(this, existingAccessory, this.log, name, reading.uid || 'blank', reading.mac);
+    }
+    return new EnviroCommon(this, existingAccessory, this.log, name, reading.uid || 'blank', reading.mac);
   }
 
   /**
