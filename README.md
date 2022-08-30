@@ -12,11 +12,18 @@ This plugin is built to connect [pimoroni enviro](https://github.com/pimoroni/en
 
 ## Currently supported boards/sensors
 
-This plugin is written for the enviro grow, which has a humidity, temperature, air pressure and three soil moisture sensors on it. We intend to make it more flexible in the future, but as it stands if you use any other enviro board you'll get the sensors on the grow in homekit and none others.
+This plugin will attempt to detect which board you have using the `model` value in the reading output. If you don't have `model`, it will try to detect it using sensors unique to each board. If you have the `mac` output, it will use the mac address as the unique identifier. Otherwise, the nickname will be used, so we advise picking unique nicknames for each board you add.
 
-**Note:** 
-- **soil moisture sensors will show up as humidity sensors.** This is due to apple not yet supporting them as their own entities - since they both show up as a droplet, and both are measured as a percentage, this made the most sense. 
+To get both of those fields in your mqtt output by default, [upgrade your firmware to what's on main branch, or a release > 0.0.2 if available](https://github.com/pimoroni/enviro/blob/main/documentation/upgrading-firmware.md)
+
+At the time of writing, grow, indoor, weather, urban are supported boards.
+
+**Notes:** 
 - **Air pressure will not show due to Apple not supporting air pressure sensors.** There is still work to be done to add it to the homekit api in order to surface it using other apps (e.g your own app) but it may be best to just wait until Apple support it natively.
+- Grow: **soil moisture sensors will show up as humidity sensors.** This is due to apple not yet supporting them as their own entities - since they both show up as a droplet, and both are measured as a percentage, this made the most sense. 
+- Indoor: **Color temperature will show as a lightbulb** due to this being the only service with a color temp characteristic. I don't have an enviro indoor board, so I don't know if that's useful or not!
+- Weather: **None of the special weather sensors are natively supported in homekit** - i.e rain, wind speed, wind direction.
+- Urban: **PM1 is not supported, nor is noise** :(
 
 ## Config
 

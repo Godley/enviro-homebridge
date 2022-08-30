@@ -1,4 +1,4 @@
-interface Common {
+export interface Common {
     model?: string;
     mac?: string;
     uid?: string;
