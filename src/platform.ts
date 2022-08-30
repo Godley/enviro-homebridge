@@ -1,9 +1,13 @@
 import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, Service, Characteristic } from 'homebridge';
 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { EnviroAccessory } from './platformAccessory';
+import { EnviroGrow } from './enviroGrow';
 
-import { MqttDriver, Reading } from './mqtt';
+import { MqttDriver } from './mqtt';
+import { EnviroUrban } from './enviroUrban';
+import { EnviroIndoor } from './enviroIndoor';
+import { EnviroWeather } from './enviroWeather';
+import { Board, Reading } from './enviro';
 
 /**
  * HomebridgePlatform
@@ -17,7 +21,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
 
-  accessoryHandlers: EnviroAccessory[] = [];
+  accessoryHandlers: Board[] = [];
 
 
   driver: MqttDriver;
@@ -37,6 +41,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       onNewDevice: this.onNewDevice,
       log: log,
     });
+    this.createHandler = this.createHandler.bind(this);
     this.log.info('Finished initializing platform:', this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
@@ -49,8 +54,10 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
   }
 
   onNewDevice(name: string, reading: Reading) {
-    const uuid = this.api.hap.uuid.generate(name);
-
+    let uuid = this.api.hap.uuid.generate(name);
+    if(reading.mac) {
+      uuid = this.api.hap.uuid.generate(reading.mac);
+    }
     // see if an accessory with the same uuid has already been registered and restored from
     // the cached devices we stored in the `configureAccessory` method above
     const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
@@ -64,10 +71,13 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       // this.api.updatePlatformAccessories([existingAccessory]);
 
       let handler = this.accessoryHandlers.find(accessory => accessory.name === name);
+      if(reading.mac) {
+        handler = this.accessoryHandlers.find(accessory => accessory.mac === reading.mac);
+      }
       // create the accessory handler for the restored accessory
       // this is imported from `platformAccessory.ts`
       if(!handler) {
-        handler = new EnviroAccessory(this, existingAccessory, this.log, name);
+        handler = this.createHandler(existingAccessory, name, reading.model, reading.uid, reading.mac);
         this.accessoryHandlers.push(handler);
       }
       this.driver.addCallback(name, handler.newReading);
@@ -87,7 +97,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
 
       // create the accessory handler for the newly create accessory
       // this is imported from `platformAccessory.ts`
-      const handler = new EnviroAccessory(this, accessory, this.log, name);
+      const handler = this.createHandler(accessory, name, reading.model, reading.uid, reading.mac);
       this.accessoryHandlers.push(handler);
       this.driver.addCallback(name, handler.newReading);
       // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
@@ -96,6 +106,27 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
       // link the accessory to your platform
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
+  }
+
+  createHandler(existingAccessory: PlatformAccessory, name: string, model?: string, uid?: string, mac?: string) {
+    let handler: Board = new EnviroGrow(this, existingAccessory, this.log, name, uid || 'blank', mac);
+    if(model) {
+      switch(model) {
+        case 'grow':
+          handler = new EnviroGrow(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          break;
+        case 'urban':
+          handler = new EnviroUrban(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          break;
+        case 'indoor':
+          handler = new EnviroIndoor(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          break;
+        case 'weather':
+          handler = new EnviroWeather(this, existingAccessory, this.log, name, uid || 'blank', mac);
+          break;
+      }
+    }
+    return handler;
   }
 
   /**
