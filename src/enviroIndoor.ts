@@ -13,6 +13,7 @@ export class EnviroIndoor implements Board {
   mac?: string;
   humid: Service;
   temp: Service;
+  light: Service;
   color_temp: Service;
 
   //soil_moisture_1: Service;
@@ -47,6 +48,8 @@ export class EnviroIndoor implements Board {
     // light bulb is the only accessory with the characteristic "color temp"
     this.color_temp = this.accessory.getService(this.platform.Service.Lightbulb)
     || this.accessory.addService(this.platform.Service.Lightbulb);
+    this.light = this.accessory.getService(this.platform.Service.LightSensor)
+    || this.accessory.addService(this.platform.Service.LightSensor);
 
   }
 
@@ -60,6 +63,7 @@ export class EnviroIndoor implements Board {
     this.temp.setCharacteristic(this.platform.Characteristic.CurrentTemperature, reading.temperature);
     this.humid.setCharacteristic(this.platform.Characteristic.CurrentRelativeHumidity, reading.humidity);
     this.color_temp.setCharacteristic(this.platform.Characteristic.ColorTemperature, reading.color_temperature);
+    this.light.setCharacteristic(this.platform.Characteristic.CurrentAmbientLightLevel, reading.luminance);
   }
 
 }
