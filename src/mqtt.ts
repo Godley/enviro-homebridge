@@ -50,7 +50,7 @@ export class MqttDriver {
 
       const reading: Reading = JSON.parse(message.toString());
       log.info(`got new reading on device ${parts[1]}`);
-      const cb = this.onNewReading.get(parts[1]);
+      const cb = this.onNewReading.get(reading.mac || parts[1]);
       if(!cb) {
         this.onNewDevice(parts[1], reading);
       } else {

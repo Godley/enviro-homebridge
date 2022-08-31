@@ -86,7 +86,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
         this.accessoryHandlers.push(handler);
       }
       if(handler) {
-        this.driver.addCallback(name, handler.newReading);
+        this.driver.addCallback(reading.mac || name, handler.newReading);
         // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
         handler.newReading(reading);
       }
@@ -110,7 +110,7 @@ export class EnviroHomebridgePlatform implements DynamicPlatformPlugin {
         handler = this.backwardsCompatHandler(accessory, name, reading);
       }
       this.accessoryHandlers.push(handler);
-      this.driver.addCallback(name, handler.newReading);
+      this.driver.addCallback(reading.mac || name, handler.newReading);
       // call it the first time, as otherwise it won't get called, but in all future readings onNewDevice should be skipped
       handler.newReading(reading);
 
